@@ -1,0 +1,110 @@
+<html>
+    <head>
+        <title>Entity from the ground up</title>
+        <link rel="stylesheet" type="text/css" href="lib/prettify/prettify.css" />
+        <link rel="stylesheet" type="text/css" href="lib/prettify/sons-of-obsidian.css" />
+        <script type="text/javascript" src="lib/jquery-1.11.1.min.js"></script>
+        <script type="text/javascript" src="lib/prettify/prettify.js"></script>
+        <script type="text/javascript" src="js/toc.js"></script>
+        <script type="text/javascript" src="js/magic.js"></script>
+        <link rel="stylesheet" type="text/css" href="css/site.css" />
+    </head>
+    <body>
+        <h3>Extension methods</h3>
+.NET provides you with the ability to add methods to existing types, even when the code for those types isn't available to you. For example, let's imagine that it would be really convenient to be able to convert a string to an integer value, and if the conversion can't take place, we should get the number 0. Without extension methods, we might have something like:
+
+<pre>
+using System;
+
+namespace MyProgram
+{
+    public class Program
+    {
+        public static int Main (string[] args)
+        {
+            foreach (var arg in args)
+            {
+                var helper = new StringHelper();
+                var integerValue = helper.AsInteger(arg);
+                Console.WriteLine("{0} as an integer is {1}", arg, integerValue);
+            }
+            return 0;
+        }
+    }
+    public class StringHelper
+    {
+        public int AsInteger(string value)
+        {
+            int parsed;
+            if (int.TryParse(value, out parsed))
+                return parsed;
+            return 0;
+        }
+    }
+}
+</pre>
+
+If we compiled that into a program and ran it like so:
+<pre>
+no_extensions.exe 1 23 a word
+</pre>
+we should see:
+<pre>
+1 as an integer is 1
+23 as an integer is 23
+a as an integer is 0
+word as an integer is 0
+</pre>
+
+There's a way we can write this code where it looks a lot nicer though: as an extension method. Imagine how nice it would be to change the main loop to something like:
+<pre>
+foreach (var arg in args)
+{
+    Console.WriteLine("{0} as an integer is {1}", arg, arg.AsInteger());
+}
+</pre>
+
+Well, we can! Because of extension methods.
+
+(an aside: C# requires extension methods to exist as static methods on static classes. VB.NET requires extension methods to exist in Modules with an <Extension()> attribute. Both styles should have examples in the 1S solution, so have a look -- they are actually quite similar. The main interesting part is that the first argument to the extension method is the object we're going to deal with -- C# makes it more obvious with the this required syntax, which we can see now...)
+
+Ok, so an extension method for what we want in C# could look like:
+
+<pre>
+public static class StringExtensions
+{
+    public static int AsInteger(this string value)
+    {
+        int parsed;
+        if (int.TryParse(value, out parsed))
+            return parsed;
+        return 0;
+    }
+}
+</pre>
+
+And we could modify the main program to look like so:
+<pre>
+public class Program
+{
+    public static int Main (string[] args)
+    {
+        foreach (var arg in args)
+        {
+            Console.WriteLine("{0} as an integer is {1}", arg, arg.AsInteger());
+        }
+        return 0;
+    }
+}
+</pre>
+
+And it outputs the same results.
+
+Whilst this extension method is quite trivial, it's the concept which forms part of the basis for how LINQ works and how we manage to get our C# or VB code to essentially do "magic SQL" for us. 
+
+        <ol id="toc">
+        </ol>
+    </body>
+</html>
+
+

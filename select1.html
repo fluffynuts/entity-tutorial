@@ -1,0 +1,93 @@
+<html>
+    <head>
+        <title>Entity from the ground up</title>
+        <link rel="stylesheet" type="text/css" href="lib/prettify/prettify.css" />
+        <link rel="stylesheet" type="text/css" href="lib/prettify/sons-of-obsidian.css" />
+        <script type="text/javascript" src="lib/jquery-1.11.1.min.js"></script>
+        <script type="text/javascript" src="lib/prettify/prettify.js"></script>
+        <script type="text/javascript" src="js/toc.js"></script>
+        <script type="text/javascript" src="js/magic.js"></script>
+        <link rel="stylesheet" type="text/css" href="css/site.css" />
+    </head>
+    <body>
+        <h3>Getting Selective</h3>
+        <p>
+Now let's take the last example we had and extend it to allow the user to input a list of
+values on the commandline for the application to sum. Not knowing any better, we might do:
+<pre>
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace MyProgram
+{
+    public class Program
+    {
+        public static int Main(string[] args)
+        {
+            var ints = new List<int>();
+            foreach (var arg in args)
+                ints.Add(arg.AsInteger());
+            Console.WriteLine("The sum is: " + ints.Sum());
+            return 0;
+        }
+    }
+
+    public static class StringExtensions
+    {
+        public static int AsInteger(this string value)
+        {
+            int parsed;
+            return int.TryParse(value, out parsed) ? parsed: 0;
+        }
+    }
+}
+</pre>
+But it turns out that data transformations (like converting to integers) are quite a common
+task. So common, in fact, that the <code>System.Linq</code> namespace imports the <code>Select</code>
+extension method. With that, we can do:
+<pre>
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace MyProgram
+{
+    public class Program
+    {
+        public static int Main(string[] args)
+        {
+            var sum = args.Select(a => a.AsInteger())
+                            .Sum();
+            Console.WriteLine("The sum is: " + sum);
+            return 0;
+        }
+    }
+
+    public static class StringExtensions
+    {
+        public static int AsInteger(this string value)
+        {
+            int parsed;
+            return int.TryParse(value, out parsed) ? parsed: 0;
+        }
+    }
+}
+</pre>
+Now that's starting to get quite useful. Notice that the <code>Select</code> method
+takes in a lambda function which is responsible for transforming each item to
+the desired output type. In our case, it just takes in a string (a) and returns
+the result of our <code>AsInteger()</code> extension method. The items are then
+passed on to the <code>Sum()</code> method to be summed.
+        </p>
+        <p>
+One of the really interesting facets of this operation is that the result of the
+<code>Select</code> isn't actualised until the very last moment when it is required --
+the moment that <code>Sum</code> needs it. Another illustration, using the filter
+extension method <code>Where</code> will show this better...
+        </p>
+        <ol id="toc">
+        </ol>
+    </body>
+</html>
+

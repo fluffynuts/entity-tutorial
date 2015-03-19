@@ -1,0 +1,15 @@
+body {
+    background-color: #333;
+    color: white;
+    font-family: tahoma, verdana, sans-serif;
+    line-height: 1.2em;
+}
+a {
+    color: #5cf;
+}
+a:visited {
+    color: #Fc5;
+}
+a:hover {
+    color: #5Fc;
+}

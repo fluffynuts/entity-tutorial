@@ -1,0 +1,121 @@
+<html>
+    <head>
+        <title>Entity from the ground up</title>
+        <link rel="stylesheet" type="text/css" href="lib/prettify/prettify.css" />
+        <link rel="stylesheet" type="text/css" href="lib/prettify/sons-of-obsidian.css" />
+        <script type="text/javascript" src="lib/jquery-1.11.1.min.js"></script>
+        <script type="text/javascript" src="lib/prettify/prettify.js"></script>
+        <script type="text/javascript" src="js/toc.js"></script>
+        <script type="text/javascript" src="js/magic.js"></script>
+        <link rel="stylesheet" type="text/css" href="css/site.css" />
+    </head>
+    <body>
+        <h3>Simple Sums</h3>
+        <p>
+So lets start with a super-simple (but useful) LINQ expression. Let's say you have an array of integers and you'd like to get their sum. Before LINQ, you'd do:
+<pre>
+using System;
+namespace MyProgram
+{
+    public class Program
+    {
+        public static int Main(string[] args)
+        {
+            var integers = new[] { 1, 2, 3 };
+            int sum = 0;
+            for (var i = 0; i < integers.Length; i++)
+                sum += integers[i];
+            Console.WriteLine("The sum is: " + sum);
+            return 0;
+        }
+    }
+
+}
+</pre>
+Hang on a moment -- let's make this program something that a user might use: let's use the extension method from up above to convert user inputs and print the sum:
+<pre>
+using System;
+
+namespace MyProgram
+{
+    public class Program
+    {
+        public static int Main(string[] args)
+        {
+            int sum = 0;
+            for (var i = 0; i < args.Length; i++)
+                sum += args[i].AsInteger();
+            Console.WriteLine("The sum is: " + sum);
+            return 0;
+        }
+    }
+
+    public static class StringExtensions
+    {
+        public static int AsInteger(this string value)
+        {
+            int parsed;
+            return (int.TryParse(value, out parsed)) ? parsed : 0;
+        }
+    }
+
+}
+</pre>
+So now we have a CLI app which can add numbers that it's given. Win! But it gets quite tedious to type out for loops all the time. There's a revolution towards functional programming, a style of thought and programming which is encouraged and facilitated by languages which treat functions as first-order citizens. Javascript is one of these languages and the .NET runtime facilitated C# and VB.NET becoming one of these languages with the inclusion of lambdas (iirc, after .NET 2.0)
+
+What if we could write something like this:
+<pre>
+using System;
+
+namespace MyProgram
+{
+    public class Program
+    {
+        public static int Main(string[] args)
+        {
+            var integers = new[] { 1, 2, 3 };
+            Console.WriteLine("The sum is: " + integers.Sum());
+            return 0;
+        }
+    }
+
+    public static class IEnumerableExtensions
+    {
+        public static int Sum(this int[] values)
+        {
+            int sum = 0;
+            for (var i = 0; i < values.Length; i++)
+                sum += values[i];
+            return sum;
+        }
+    }
+}
+</pre>
+
+Of course we can! But this has to be common functionality, right? Turns out, this kind of thing is already done for us, if we import the System.Linq namespace:
+
+<pre>
+using System;
+using System.Linq;
+
+namespace MyProgram
+{
+    public class Program
+    {
+        public static int Main(string[] args)
+        {
+            var integers = new[] { 1, 2, 3 };
+            Console.WriteLine("The sum is: " + integers.Sum());
+            return 0;
+        }
+    }
+}
+</pre>
+
+Not only is that way shorter and neater, but an extension method like that would mean that we could sum integers any time without having to worry about introducing bugs in the sum logic.        
+        </p>
+        <ol id="toc">
+        </ol>
+    </body>
+</html>
+

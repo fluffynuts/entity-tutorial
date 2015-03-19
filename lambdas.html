@@ -1,0 +1,155 @@
+
+<html>
+    <head>
+        <title>Entity from the ground up</title>
+        <link rel="stylesheet" type="text/css" href="lib/prettify/prettify.css" />
+        <link rel="stylesheet" type="text/css" href="lib/prettify/sons-of-obsidian.css" />
+        <script type="text/javascript" src="lib/jquery-1.11.1.min.js"></script>
+        <script type="text/javascript" src="lib/prettify/prettify.js"></script>
+        <script type="text/javascript" src="js/toc.js"></script>
+        <script type="text/javascript" src="js/magic.js"></script>
+        <link rel="stylesheet" type="text/css" href="css/site.css" />
+    </head>
+    <body>
+        <h3>Lambdas</h3>
+        <p>
+The second part of the magic comes down to lambdas, which really are just anonymous functions. What that means is that they are little bits of code which can do stuff but aren't declared "set in stone" like other methods. For example, our program above could be wholly re-written as follows:
+        </p>
+<pre>
+using System;
+
+namespace MyProgram
+{
+    public class Program
+    {
+        public static int Main (string[] args)
+        {
+            Func<string, int> toInt = s =>
+            {
+                int parsed;
+                if (int.TryParse(s, out parsed))
+                    return parsed;
+                return 0;
+            };
+
+            foreach (var arg in args)
+            {
+                Console.WriteLine("{0} as an integer is {1}", arg, toInt(arg));
+            }
+            return 0;
+        }
+    }
+}
+</pre>
+
+Notice that we create a function, on-the-fly, called toInt which does the conversion. The interesting part of this is that the toInt variable can be passed into another method and used there:
+<pre>
+using System;
+
+namespace MyProgram
+{
+    public class Program
+    {
+        public static int Main (string[] args)
+        {
+            Func<string, int> toInt = s =>
+            {
+                int parsed;
+                if (int.TryParse(s, out parsed))
+                    return parsed;
+                return 0;
+            };
+
+            foreach (var arg in args)
+            {
+                PrintAsInt(arg, toInt);
+            }
+            return 0;
+        }
+
+        public static void PrintAsInt(string value, Func<string, int> converter)
+        {
+            Console.WriteLine("{0} as an integer is {1}", value, converter(value));
+        }
+
+    }
+}
+</pre>
+indeed, it can be passed in on-the-fly:
+
+<pre>
+using System;
+
+namespace MyProgram
+{
+    public class Program
+    {
+        public static int Main (string[] args)
+        {
+            foreach (var arg in args)
+            {
+                PrintAsInt(arg, s => {
+                    int parsed;
+                    if (int.TryParse(s, out parsed))
+                        return parsed;
+                    return 0;
+                });
+            }
+            return 0;
+        }
+
+        public static void PrintAsInt(string value, Func<string, int> converter)
+        {
+            Console.WriteLine("{0} as an integer is {1}", value, converter(value));
+        }
+
+    }
+}
+</pre>
+We could combine the extension method strategy with this lambda strategy for yet another variant (which now starts to look quite neat):
+<pre>
+using System;
+
+namespace MyProgram
+{
+    public class Program
+    {
+        public static int Main (string[] args)
+        {
+            foreach (var arg in args)
+            {
+                PrintWithConversion(arg, s => s.AsInteger());
+            }
+            return 0;
+        }
+
+        public static void PrintWithConversion(string value, Func<string, int> converter)
+        {
+            Console.WriteLine("{0} as an integer is {1}", value, converter(value));
+        }
+
+    }
+
+    public static class StringExtensions
+    {
+        public static int AsInteger(this string value)
+        {
+            int parsed;
+            if (int.TryParse(value, out parsed))
+                return parsed;
+            return 0;
+        }
+    }
+}
+</pre>
+
+These two features of .NET underpin how LINQ works:
+<ol>
+    <li>All LINQ methods are implemented as extension methods, typically on types that implement IEnumerable<> (so, arrays, lists, etc)</li>
+    <li>Many LINQ methods take (often optionally) a lambda to help them direct their actions.</li>
+</ol>
+
+        <ol id="toc">
+        </ol>
+    </body>
+</html>

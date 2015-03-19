@@ -1,0 +1,124 @@
+<html>
+    <head>
+        <title>Entity from the ground up</title>
+        <link rel="stylesheet" type="text/css" href="lib/prettify/prettify.css" />
+        <link rel="stylesheet" type="text/css" href="lib/prettify/sons-of-obsidian.css" />
+        <script type="text/javascript" src="lib/jquery-1.11.1.min.js"></script>
+        <script type="text/javascript" src="lib/prettify/prettify.js"></script>
+        <script type="text/javascript" src="js/toc.js"></script>
+        <script type="text/javascript" src="js/magic.js"></script>
+        <link rel="stylesheet" type="text/css" href="css/site.css" />
+    </head>
+    <body>
+        <h3>Where could it be?</h3>
+        <p>
+        The <code>Where</code> extension method allows us to filter out items
+        from a collection which don't match our criteria. Let's say we wanted to only sum
+        the even numbers that a user gave us:
+        <pre>
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace MyProgram
+{
+    public class Program
+    {
+        public static int Main(string[] args)
+        {
+            var evens = args.Select(a => a.AsInteger())
+                            .Where(i => i % 2 == 0);
+            Console.WriteLine("evens is: " + evens);
+            Console.WriteLine("The sum is: " + evens.Sum());
+            return 0;
+        }
+    }
+
+    public static class StringExtensions
+    {
+        public static int AsInteger(this string value)
+        {
+            int parsed;
+            return int.TryParse(value, out parsed) ? parsed: 0;
+        }
+    }
+}
+        </pre>
+The interesting part here is the console output we'll see:
+<pre>
+evens is: System.Linq.Enumerable+<CreateWhereIterator>c__Iterator1E`1[System.Int32]
+The sum is: 6
+</pre>
+Notice that <code>evens</code> isn't an array or a list or something like that. Instead,
+it's an expression which will be evaluated at the last possible moment -- when <code>Sum</code>
+is called. Here, we can make it even more apparrent that this late evaluation is taking place:
+<pre>
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace MyProgram
+{
+    public class Program
+    {
+        public static int Main(string[] args)
+        {
+            var evens = args.Select(a => a.AsInteger())
+                            .Where(i => {
+                                var isEven = i % 2 == 0;
+                                Console.WriteLine(i + (isEven? " is even" : " is odd"));
+                                return isEven;
+                            });
+            Console.WriteLine("evens is: " + evens);
+            Console.WriteLine("The sum is: " + evens.Sum());
+            return 0;
+        }
+    }
+
+    public static class StringExtensions
+    {
+        public static int AsInteger(this string value)
+        {
+            int parsed;
+            return int.TryParse(value, out parsed) ? parsed: 0;
+        }
+    }
+}
+</pre>
+which outputs:
+<pre>
+evens is: System.Linq.Enumerable+<CreateWhereIterator>c__Iterator1E`1[System.Int32]
+1 is odd
+2 is even
+3 is odd
+4 is even
+5 is odd
+The sum is: 6
+</pre>
+Notice that the extra logging only happened when the <code>Sum</code> method <i>forced</i>
+the whole expression to be evaluated!
+        </p>
+        <p>
+        This may seem like an arbitrary point to make, but it becomes much more important
+        later when we examine how LINQ is used in a LINQ-to-SQL strategy, as employed by
+        Entity. In this case, the mechanism for how LINQ works allows Entity to cleverly
+        construct SQL statements to provide the required outputs at the server instead of
+        having a copy of all the data locally. Basically, LINQ expressions against Entity
+        collections are evaluated into ad-hoc SQL queries which fetch the data and the
+        underlying code then converts the results back out into Plain Old C# Objects (POCOs).
+        Well, let's just say "Plain Old Objects" because this works just as well from VB.NET
+        and other supported .NET -targeting languages.
+        </p>
+        <p>
+        For now, this is a reasonable chunk of information to absorb. There's a lot more though,
+        so I'd recommend:
+        <ul>
+        <li>Reading more about LINQ: <a href="https://msdn.microsoft.com/en-us/library/bb397933.aspx">https://msdn.microsoft.com/en-us/library/bb397933.aspx</a></li>
+        <li>Downloading LINQPad <a href="http://www.linqpad.net/Download.aspx">http://www.linqpad.net/Download.aspx</a> and trying out your own queries. LINQPad also comes with some tutorials on how to use LINQ, so give those a go.</li>
+        </ul>
+        </p>
+        <ol id="toc">
+        </ol>
+    </body>
+</html>
+
